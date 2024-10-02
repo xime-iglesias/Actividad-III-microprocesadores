@@ -1,0 +1,171 @@
+---------------------------------------------
+OSHONSOFT Z80 ASSEMBLER LISTING
+Line   Addr Opcode      Label   Instruction
+---------------------------------------------
+0001   0000             
+0002   0000              ORG 0x1000 ;Line modified by ASM preprocessor (ORG correction): ORG 0x1000   ; Dirección de inicio del programa
+0003   1000             
+0004   1000             ; Variables
+0005   1000 00 00 00 00 randomNumbers:  DS 20   ; Espacio para 20 números aleatorios
+0005   1004 00 00 00 00 
+0005   1008 00 00 00 00 
+0005   100C 00 00 00 00 
+0005   1010 00 00 00 00 
+0006   1014 00 00 00 00 sortedNumbers:  DS 20   ; Espacio para números ordenados
+0006   1018 00 00 00 00 
+0006   101C 00 00 00 00 
+0006   1020 00 00 00 00 
+0006   1024 00 00 00 00 
+0007   1028 A5          seed:          DB 0xA5  ; Semilla para la generación de números aleatorios
+0008   1029 00          option:        DB 0     ; Opción de orden: 0 = ascendente, 1 = descendente
+0009   102A             
+0010   102A             INICIO
+0011   102A                 ; Mostrar mensaje de inicio
+0012   102A 11 B1 10        LD DE, MENSAJE_INICIO
+0013   102D CD AC 10        CALL IMPRIMIR_TEXTO
+0014   1030             
+0015   1030                 ; Generar 20 números aleatorios
+0016   1030 CD 5D 10        CALL GENERAR_NUMEROS
+0017   1033             
+0018   1033                 ; Mostrar números generados
+0019   1033 CD 73 10        CALL MOSTRAR_NUMEROS
+0020   1036             
+0021   1036                 ; Preguntar si ordenar ascendente o descendente
+0022   1036 11 D1 10        LD DE, MENSAJE_ORDEN
+0023   1039 CD AC 10        CALL IMPRIMIR_TEXTO
+0024   103C CD AE 10        CALL LEER_OPCION
+0025   103F 32 29 10        LD (option), A
+0026   1042             
+0027   1042                 ; Ordenar los números
+0028   1042 CD 80 10        CALL ORDENAR_NUMEROS
+0029   1045             
+0030   1045                 ; Mostrar números ordenados
+0031   1045 CD 9F 10        CALL MOSTRAR_ORDENADOS
+0032   1048             
+0033   1048                 ; Preguntar si continuar o terminar
+0034   1048 11 FB 10        LD DE, MENSAJE_CONTINUAR
+0035   104B CD AC 10        CALL IMPRIMIR_TEXTO
+0036   104E CD AE 10        CALL LEER_OPCION
+0037   1051 FE 53           CP 'S'       ; Si elige 'S', volver a empezar
+0038   1053 CA 2A 10        JP Z, INICIO
+0039   1056             
+0040   1056                 ; Si no, mostrar mensaje de salida
+0041   1056 11 0C 11        LD DE, MENSAJE_SALIR
+0042   1059 CD AC 10        CALL IMPRIMIR_TEXTO
+0043   105C             
+0044   105C 76              HALT         ; Termina el programa
+0045   105D             
+0046   105D             ; Subrutinas
+0047   105D             
+0048   105D             GENERAR_NUMEROS:
+0049   105D 21 00 10        LD HL, randomNumbers
+0050   1060 06 14           LD B, 20     ; Generar 20 números
+0051   1062             LOOP_GENERAR:
+0052   1062 CD 6A 10        CALL GENERADOR_ALEATORIO
+0053   1065 77              LD (HL), A
+0054   1066 23              INC HL
+0055   1067 10 F9           DJNZ LOOP_GENERAR
+0056   1069 C9              RET
+0057   106A             
+0058   106A             GENERADOR_ALEATORIO:
+0059   106A 3A 28 10        LD A, (seed)
+0060   106D EE A5           XOR 0xA5      ; XOR con un valor constante
+0061   106F 32 28 10        LD (seed), A  ; Actualizar
+0062   1072 C9              RET
+0063   1073             
+0064   1073             MOSTRAR_NUMEROS:
+0065   1073 21 00 10        LD HL, randomNumbers
+0066   1076 06 14           LD B, 20
+0067   1078             LOOP_MOSTRAR:
+0068   1078 7E              LD A, (HL)
+0069   1079 CD AD 10        CALL IMPRIMIR_NUMERO
+0070   107C 23              INC HL
+0071   107D 10 F9           DJNZ LOOP_MOSTRAR
+0072   107F C9              RET
+0073   1080             
+0074   1080             ORDENAR_NUMEROS:
+0075   1080 3A 29 10        LD A, (option)
+0076   1083 FE 41           CP 'A'         ; Ver si es ascendente (A) o descendente (D)
+0077   1085 CA 8B 10        JP Z, ORDENAR_ASC
+0078   1088 C3 B0 10        JP ORDENAR_B_DESC
+0079   108B             
+0080   108B             ORDENAR_ASC:
+0081   108B                 ; Ordenar de manera ascendente
+0082   108B 21 00 10        LD HL, randomNumbers
+0083   108E 11 14 10        LD DE, sortedNumbers
+0084   1091 CD AF 10        CALL ORDENAR_B_ASC
+0085   1094 C9              RET
+0086   1095             
+0087   1095             ORDENAR_DESC:
+0088   1095                 ; Ordenar de manera descendente
+0089   1095 21 00 10        LD HL, randomNumbers
+0090   1098 11 14 10        LD DE, sortedNumbers
+0091   109B CD B0 10        CALL ORDENAR_B_DESC
+0092   109E C9              RET
+0093   109F             
+0094   109F             MOSTRAR_ORDENADOS:
+0095   109F 21 14 10        LD HL, sortedNumbers
+0096   10A2 06 14           LD B, 20
+0097   10A4             LOOP_MOSTRAR_ORDENADOS:
+0098   10A4 7E              LD A, (HL)
+0099   10A5 CD AD 10        CALL IMPRIMIR_NUMERO
+0100   10A8 23              INC HL
+0101   10A9 10 F9           DJNZ LOOP_MOSTRAR_ORDENADOS
+0102   10AB C9              RET
+0103   10AC             
+0104   10AC             ; Subrutinas para imprimir texto y números
+0105   10AC             IMPRIMIR_TEXTO:
+0106   10AC                 ; Imprime el texto en DE hasta encontrar 0
+0107   10AC C9              RET
+0108   10AD             
+0109   10AD             IMPRIMIR_NUMERO:
+0110   10AD                 ; Imprime el número en A en decimal
+0111   10AD C9              RET
+0112   10AE             
+0113   10AE             LEER_OPCION:
+0114   10AE                 ; Leer opción del usuario
+0115   10AE C9              RET
+0116   10AF             
+0117   10AF             ORDENAR_B_ASC:
+0118   10AF                 ; Algoritmo para orden ascendente
+0119   10AF C9              RET
+0120   10B0             
+0121   10B0             ORDENAR_B_DESC:
+0122   10B0                 ; Algoritmo para orden descendente
+0123   10B0 C9              RET
+0124   10B1             
+0125   10B1             ; Mensajes
+0126   10B1 47 65 6E 65 MENSAJE_INICIO:    DB 'Generando numeros aleatorios...', 0
+0126   10B5 72 61 6E 64 
+0126   10B9 6F 20 6E 75 
+0126   10BD 6D 65 72 6F 
+0126   10C1 73 20 61 6C 
+0126   10C5 65 61 74 6F 
+0126   10C9 72 69 6F 73 
+0126   10CD 2E 2E 2E 00 
+0127   10D1 4F 72 64 65 MENSAJE_ORDEN:     DB 'Ordenar Ascendente (A) o Descendente (D)?', 0
+0127   10D5 6E 61 72 20 
+0127   10D9 41 73 63 65 
+0127   10DD 6E 64 65 6E 
+0127   10E1 74 65 20 28 
+0127   10E5 41 29 20 6F 
+0127   10E9 20 44 65 73 
+0127   10ED 63 65 6E 64 
+0127   10F1 65 6E 74 65 
+0127   10F5 20 28 44 29 
+0127   10F9 3F 00       
+0128   10FB 43 6F 6E 74 MENSAJE_CONTINUAR: DB 'Continuar? (S/N)', 0
+0128   10FF 69 6E 75 61 
+0128   1103 72 3F 20 28 
+0128   1107 53 2F 4E 29 
+0128   110B 00          
+0129   110C 53 61 6C 69 MENSAJE_SALIR:     DB 'Saliendo del programa...', 0
+0129   1110 65 6E 64 6F 
+0129   1114 20 64 65 6C 
+0129   1118 20 70 72 6F 
+0129   111C 67 72 61 6D 
+0129   1120 61 2E 2E 2E 
+0129   1124 00          
+0130   1125             
+0131   1125             END
+Number of errors = 0
